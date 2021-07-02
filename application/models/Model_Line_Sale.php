@@ -108,32 +108,39 @@ class Model_Line_Sale extends CI_Model{
 
     public function InsertDetailShop($data_){
 
-        $this->db->trans_begin();
-        $this->db->where('ls_shop_id', $data_['ls_shop_id'])
-        ->set(
-            array( 
-           
-                'ls_shop_datebrith'         => $data_['ls_shop_datebrith'],
-                'ls_shop_sale_gender'       => $data_['ls_shop_sale_gender'],
-                'ls_shop_email'             => $data_['ls_shop_email'],
-                'ls_shop_lat_lon'           => json_encode($data_['ls_shop_lat_lon']),
-                'ls_shop_file'              => json_encode($data_['ls_shop_file']),
+        if($data_['ls_shop_id']  != ""){
+            
+            $this->db->trans_begin();
+            $this->db->where('ls_shop_id', $data_['ls_shop_id'])
+            ->set(
+                array( 
+               
+                    'ls_shop_datebrith'         => $data_['ls_shop_datebrith'],
+                    'ls_shop_sale_gender'       => $data_['ls_shop_sale_gender'],
+                    'ls_shop_email'             => $data_['ls_shop_email'],
+                    'ls_shop_lat_lon'           => json_encode($data_['ls_shop_lat_lon']),
+                    'ls_shop_file'              => json_encode($data_['ls_shop_file']),
+        
+                    )) ->update('ls_shop');
     
-                )) ->update('ls_shop');
-
-
-        if ($this->db->trans_status() === false) {
-            $this->db->trans_rollback();
+    
+            if ($this->db->trans_status() === false) {
+                $this->db->trans_rollback();
+                return  array(  'status' => "false" , 'result' => "update ls_shop false" );
+            } else {
+                $this->db->trans_commit();
+                $data_['action'] = "UpdateShopDetail";
+                $data_['ls_shop_sale_id'] =  $data_['ls_shop_id'];
+    
+                $this->InsertShopLog($data_);
+    
+                return  array(  'status' => "true" , 'result' => "UpdateShopDetail ls_shop true" );
+            }
+        }else{
             return  array(  'status' => "false" , 'result' => "update ls_shop false" );
-        } else {
-            $this->db->trans_commit();
-            $data_['action'] = "UpdateShopDetail";
-            $data_['ls_shop_sale_id'] =  $data_['ls_shop_id'];
-
-            $this->InsertShopLog($data_);
-
-            return  array(  'status' => "true" , 'result' => "UpdateShopDetail ls_shop true" );
         }
+
+     
 
     }
 
