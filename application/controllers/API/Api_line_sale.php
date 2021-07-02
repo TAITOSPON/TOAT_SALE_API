@@ -30,7 +30,7 @@ class Api_line_sale extends REST_Controller{
 
                                 $data = json_decode(file_get_contents('php://input'), true);  
                                 $result = $this->Model_Line_Sale->GetAllShopRegister($data); 
-                                $result = json_encode( $this->ConvertJson_DATASTUDIO($result) ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                                $result = json_encode( $this->Model_Line_Sale->ConvertJson_DATASTUDIO($result) ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                                 echo  $result ; 
                         }
 
@@ -52,7 +52,7 @@ class Api_line_sale extends REST_Controller{
                 $data = json_decode(file_get_contents('php://input'), true);  
                 $result = $this->Model_Line_Sale->GetDetailShopById($data); 
                 // $result = json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                $result = json_encode( $this->ConvertJson($result) ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                $result = json_encode( $this->Model_Line_Sale->ConvertJson($result) ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
                 echo  $result ;
 
         }
@@ -122,84 +122,12 @@ class Api_line_sale extends REST_Controller{
         } 
 
 
-        public function ConvertJson($result){
-                if($result!=null){
-                        for($index =0; $index  < sizeof($result); $index ++){
-
-                                $array_latlon           = json_decode($result[$index]['ls_shop_lat_lon'],true);
-                                $array_address          = json_decode($result[$index]['ls_shop_address'],true);
-                                $array_file             = json_decode($result[$index]['ls_shop_file'],true);
-                                $array_line_regis       = json_decode($result[$index]['ls_shop_line_regis'],true);
-        
-                                $result[$index]['ls_shop_lat_lon']      =  $array_latlon;
-                                $result[$index]['ls_shop_address']      =  $array_address;
-                                $result[$index]['ls_shop_file']         =  $array_file;
-                                $result[$index]['ls_shop_line_regis']   =  $array_line_regis;
-                           
-                        }
-                        
-                        return $result;
-        
-                }
-                
-                
-
+        public function InsertDetailShop_post(){
+               
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Line_Sale->InsertDetailShop($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
-
-
-
-        public function ConvertJson_DATASTUDIO($result){
-        
-                
-                for($index =0; $index  < sizeof($result); $index ++){
-
-                        $array_latlon           = json_decode($result[$index]['ls_shop_lat_lon'],true);
-                        $array_tambol           = json_decode($result[$index]['ls_shop_address'],true);
-                        $array_file             = json_decode($result[$index]['ls_shop_file'],true);
-                        $array_line_regis       = json_decode($result[$index]['ls_shop_line_regis'],true);
-
-
-                        $result[$index]['ls_shop_lat_lon']      =  $array_latlon['lat'] .",".$array_latlon['lon'];
-                        // $result[$index]['ls_shop_lat_lon']      =  $array_latlon['lon'];
-
-
-                        $result[$index]['ls_shop_address_address']              =  $array_tambol['address'];
-                        $result[$index]['ls_shop_address_tambon']               =  $array_tambol['tambon'];
-                        $result[$index]['ls_shop_address_amphoe']               =  $array_tambol['amphoe'];
-                        $result[$index]['ls_shop_address_province']             =  $array_tambol['province'];
-                        $result[$index]['ls_shop_address_zipcode']              =  $array_tambol['zipcode'];
-                        $result[$index]['ls_shop_address_tambon_code']          =  $array_tambol['tambon_code'];
-                        $result[$index]['ls_shop_address_amphoe_code']          =  $array_tambol['amphoe_code'];
-                        $result[$index]['ls_shop_address_province_code']        =  $array_tambol['province_code'];
-                        $result[$index]['ls_shop_address_id']                   =  $array_tambol['id'];
-
-
-                        $result[$index]['ls_shop_file_ls_shop_file_01']         =  $array_file['ls_shop_file_01'];
-
-                        $result[$index]['ls_shop_line_regis_user_line_uid']             =  $array_line_regis['user_line_uid'];
-                        $result[$index]['ls_shop_line_regis_user_line_name']            =  $array_line_regis['user_line_name'];
-                        $result[$index]['ls_shop_line_regis_user_line_pic_url']         =  $array_line_regis['user_line_pic_url'];
-
-                        if(isset($array_line_regis['user_os'])){
-                                $result[$index]['ls_shop_line_regis_user_line_os']              =  $array_line_regis['user_os'];
-                        }else{
-                                $result[$index]['ls_shop_line_regis_user_line_os']   = NULL;
-                        }
-                       
-           
-                        unset($result[$index]['ls_shop_address']    );
-                        unset($result[$index]['ls_shop_file']       );
-                        unset($result[$index]['ls_shop_line_regis'] );
-                     
-                   
-                }
-                
-                return $result;
-
-
-        }
-
-
 
         public function GetWithJson_post(){
               
