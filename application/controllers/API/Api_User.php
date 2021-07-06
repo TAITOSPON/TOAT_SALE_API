@@ -20,7 +20,8 @@ class Api_User extends REST_Controller{
             $data = json_decode(file_get_contents('php://input'), true);  
          
             $result_p1 = $this->P1_CheckUser($data);
-        
+
+    
             if($result_p1['status'] == "true"){
 
                 $result = $result_p1;
@@ -55,15 +56,18 @@ class Api_User extends REST_Controller{
             $status_check = "false";
             $result_check = array();
 
-            for($index =0; $index  < sizeof($result_shop); $index ++){
-                
-                if($user_line_uid == $result_shop[$index]['ls_shop_line_regis_user_line_uid']){
+            if($user_line_uid != ""){
 
-                    array_push($result_check,$result_shop[$index]);
-                    $status_check = "true";
+                for($index =0; $index  < sizeof($result_shop); $index ++){
+                    
+                    if($user_line_uid == $result_shop[$index]['ls_shop_line_regis_user_line_uid']){
+
+                        array_push($result_check,$result_shop[$index]);
+                        $status_check = "true";
+
+                    }
 
                 }
-
             }
             return array("status" => $status_check , "result" => array("type" => "Shop" , "result" => $result_check));
 
@@ -80,16 +84,20 @@ class Api_User extends REST_Controller{
             $status_check = "false";
             $result_check = array();
 
-            for($index =0; $index  < sizeof($result_p1); $index ++){
+            if($user_line_uid != ""){
+
+                for($index =0; $index  < sizeof($result_p1); $index ++){
                 
-                if($user_line_uid == $result_p1[$index]['ls_shop_p1_line_uid']){
-
-                    array_push($result_check,$result_p1[$index]);
-                    $status_check = "true";
-
+                    if($user_line_uid == $result_p1[$index]['ls_shop_p1_line_uid']){
+    
+                        array_push($result_check,$result_p1[$index]);
+                        $status_check = "true";
+    
+                    }
+    
                 }
-
             }
+          
             return array("status" => $status_check , "result" => array("type" => "P1" , "result" => $result_check));
 
 

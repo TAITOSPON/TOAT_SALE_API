@@ -163,6 +163,14 @@ class Model_Line_Sale extends CI_Model{
     }
 
 
+    public function GetShopHaveLineRegis(){
+       
+        $result = $this->db->query("SELECT * FROM `ls_shop` WHERE ls_shop_line_regis != 'null' ")->result_array();
+       
+        return $this->ConvertJson_DATASTUDIO($result);
+    }
+
+
     public function ConvertJson($result){
 
             if($result!=null){
