@@ -28,7 +28,12 @@ class Api_Game extends REST_Controller{
                 
         }
 
-
+        public function treetest_get(){
+      
+                $result = $this->Model_Game->tree(); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+                
+        }
    
 
 }

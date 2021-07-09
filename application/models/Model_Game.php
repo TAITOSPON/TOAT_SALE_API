@@ -22,7 +22,7 @@ class Model_Game extends CI_Model{
                     'ls_shop_id'                    => $data['ls_shop_id'],
                     "user_line_uid"                 => $data['user_line_uid'],
                     'ls_shop_geme_regis_datetime'   => date("Y-m-d H:i:s"),
-                    'ls_shop_geme_regis_count'      => (intval($result_count[0]['count(*)'])+1),
+                    'ls_shop_geme_regis_count'      => $this->SetNumberCountThreeDigit((intval($result_count[0]['count(*)'])+1)),
                     'ls_shop_geme_regis_status'     => "true",
                    
                 );
@@ -55,6 +55,28 @@ class Model_Game extends CI_Model{
         }
     
     }
+
+    public function SetNumberCountThreeDigit($number){
+   
+        if($number < 100){
+
+            if($number < 10){
+
+                return "00".strval($number);
+    
+            }else{
+                return "0".strval($number);
+            }
+
+        }else{
+
+            return strval($number);
+
+        }
+       
+
+    }
+ 
 
 
     public function CheckStatusPlayGameRegisCount($data){
@@ -92,6 +114,10 @@ class Model_Game extends CI_Model{
             return  array(  'status' => "false" , 'result' => "request ls_shop_id" );
         }
     }
- 
+
+
+
+
+
 
 }
