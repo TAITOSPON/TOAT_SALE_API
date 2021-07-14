@@ -145,7 +145,11 @@ class Api_line_sale extends REST_Controller{
 
         }
         
-      
+        public function EditShopByShopSalf_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Line_Sale->EditShopByShopSalf($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
 
        
 

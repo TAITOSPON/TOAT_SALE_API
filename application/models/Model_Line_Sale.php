@@ -2,6 +2,138 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 class Model_Line_Sale extends CI_Model{    
+  
+    public function ConvertJson($result){
+
+        if($result!=null){
+                for($index =0; $index  < sizeof($result); $index ++){
+
+
+                        if($result[$index]['ls_shop_lat_lon'] == "null"){
+
+                            $array_latlon = json_encode( array("lat" => "null" , "lon"=>"null") ); 
+                            $array_latlon = json_decode($array_latlon,true);
+                            
+                        }else{
+                            $array_latlon           = json_decode($result[$index]['ls_shop_lat_lon'],true);
+                        }
+                     
+
+
+                        $array_address          = json_decode($result[$index]['ls_shop_address'],true);
+                        $array_file             = json_decode($result[$index]['ls_shop_file'],true);
+                        $array_line_regis       = json_decode($result[$index]['ls_shop_line_regis'],true);
+
+                        $result[$index]['ls_shop_lat_lon']      =  $array_latlon;
+                        $result[$index]['ls_shop_address']      =  $array_address;
+                        $result[$index]['ls_shop_file']         =  $array_file;
+                        $result[$index]['ls_shop_line_regis']   =  $array_line_regis;
+
+                        if($result[$index]['ls_shop_sale_gender'] == null){
+                            $result[$index]['ls_shop_sale_status_detail']   = "false";
+                        }else{
+                            $result[$index]['ls_shop_sale_status_detail']   = "true";
+                            
+                            // if($result[$index]['ls_shop_sale_gender'] == '1'){
+                            //     $result[$index]['ls_shop_sale_gender'] = "ชาย";
+                            // }else if($result[$index]['ls_shop_sale_gender'] == '2'){
+                            //     $result[$index]['ls_shop_sale_gender'] = "หญิง";
+                            // }else  if($result[$index]['ls_shop_sale_gender'] == '3'){
+                            //     $result[$index]['ls_shop_sale_gender'] = "ไม่ระบุ";
+                            // }
+                           
+                        }
+                       
+                    
+                }
+                
+                return $result;
+
+        }
+        
+        
+
+    }
+
+    public function ConvertJson_DATASTUDIO($result){
+
+            
+            for($index =0; $index  < sizeof($result); $index ++){
+
+                    $array_latlon           = json_decode($result[$index]['ls_shop_lat_lon'],true);
+                    $array_tambol           = json_decode($result[$index]['ls_shop_address'],true);
+                    $array_file             = json_decode($result[$index]['ls_shop_file'],true);
+                    $array_line_regis       = json_decode($result[$index]['ls_shop_line_regis'],true);
+
+
+                    $result[$index]['ls_shop_lat_lon']      =  $array_latlon['lat'] .",".$array_latlon['lon'];
+                    // $result[$index]['ls_shop_lat_lon']      =  $array_latlon['lon'];
+
+
+                    $result[$index]['ls_shop_address_address']              =  $array_tambol['address'];
+                    $result[$index]['ls_shop_address_tambon']               =  $array_tambol['tambon'];
+                    $result[$index]['ls_shop_address_amphoe']               =  $array_tambol['amphoe'];
+                    $result[$index]['ls_shop_address_province']             =  $array_tambol['province'];
+                    $result[$index]['ls_shop_address_zipcode']              =  $array_tambol['zipcode'];
+                    $result[$index]['ls_shop_address_tambon_code']          =  $array_tambol['tambon_code'];
+                    $result[$index]['ls_shop_address_amphoe_code']          =  $array_tambol['amphoe_code'];
+                    $result[$index]['ls_shop_address_province_code']        =  $array_tambol['province_code'];
+                    $result[$index]['ls_shop_address_id']                   =  $array_tambol['id'];
+
+                    if(isset($array_tambol['address_number'])){
+                        if(isset($array_tambol['address_group_number'])){
+
+                            $result[$index]['ls_shop_address_number']               =  $array_tambol['address_number'];
+                            $result[$index]['ls_shop_address_group_number']         =  $array_tambol['address_group_number'];
+
+                        }
+                    }else{
+                        $result[$index]['ls_shop_address_number']               =  NULL;
+                        $result[$index]['ls_shop_address_group_number']         =  NULL;
+                    }
+
+
+
+
+                    $result[$index]['ls_shop_file_ls_shop_file_01']         =  $array_file['ls_shop_file_01'];
+
+                    $result[$index]['ls_shop_line_regis_user_line_uid']             =  $array_line_regis['user_line_uid'];
+                    $result[$index]['ls_shop_line_regis_user_line_name']            =  $array_line_regis['user_line_name'];
+                    $result[$index]['ls_shop_line_regis_user_line_pic_url']         =  $array_line_regis['user_line_pic_url'];
+
+                    if(isset($array_line_regis['user_os'])){
+                            $result[$index]['ls_shop_line_regis_user_line_os']              =  $array_line_regis['user_os'];
+                    }else{
+                            $result[$index]['ls_shop_line_regis_user_line_os']   = NULL;
+                    }
+
+                    if($result[$index]['ls_shop_sale_gender'] == null){
+                        $result[$index]['ls_shop_sale_status_detail']   = "false";
+                    }else{
+                        $result[$index]['ls_shop_sale_status_detail']   = "true";
+                        
+                        // if($result[$index]['ls_shop_sale_gender'] == '1'){
+                        //     $result[$index]['ls_shop_sale_gender'] = "ชาย";
+                        // }else if($result[$index]['ls_shop_sale_gender'] == '2'){
+                        //     $result[$index]['ls_shop_sale_gender'] = "หญิง";
+                        // }else  if($result[$index]['ls_shop_sale_gender'] == '3'){
+                        //     $result[$index]['ls_shop_sale_gender'] = "ไม่ระบุ";
+                        // }
+                    
+                    }
+                    
+        
+                    unset($result[$index]['ls_shop_address']    );
+                    unset($result[$index]['ls_shop_file']       );
+                    unset($result[$index]['ls_shop_line_regis'] );
+                    
+                
+            }
+            
+            return $result;
+
+
+    }
 
 
     public function InsertShop($data_){
@@ -145,7 +277,7 @@ class Model_Line_Sale extends CI_Model{
     }
 
     public function GetAllShopRegister($data){
-        $result = $this->db->query(" SELECT * FROM `ls_shop` WHERE `ls_shop_status` = 1 ")->result_array();
+        $result = $this->db->query(" SELECT * FROM `ls_shop` WHERE `ls_shop_status` = 1 ORDER BY `ls_shop`.`ls_shop_id`  DESC ")->result_array();
         return $result;
     }
 
@@ -171,139 +303,6 @@ class Model_Line_Sale extends CI_Model{
     }
 
 
-    public function ConvertJson($result){
-
-            if($result!=null){
-                    for($index =0; $index  < sizeof($result); $index ++){
-
-
-                            if($result[$index]['ls_shop_lat_lon'] == "null"){
-
-                                $array_latlon = json_encode( array("lat" => "null" , "lon"=>"null") ); 
-                                $array_latlon = json_decode($array_latlon,true);
-                                
-                            }else{
-                                $array_latlon           = json_decode($result[$index]['ls_shop_lat_lon'],true);
-                            }
-                         
-
-
-                            $array_address          = json_decode($result[$index]['ls_shop_address'],true);
-                            $array_file             = json_decode($result[$index]['ls_shop_file'],true);
-                            $array_line_regis       = json_decode($result[$index]['ls_shop_line_regis'],true);
-    
-                            $result[$index]['ls_shop_lat_lon']      =  $array_latlon;
-                            $result[$index]['ls_shop_address']      =  $array_address;
-                            $result[$index]['ls_shop_file']         =  $array_file;
-                            $result[$index]['ls_shop_line_regis']   =  $array_line_regis;
-
-                            if($result[$index]['ls_shop_sale_gender'] == null){
-                                $result[$index]['ls_shop_sale_status_detail']   = "false";
-                            }else{
-                                $result[$index]['ls_shop_sale_status_detail']   = "true";
-                                
-                                // if($result[$index]['ls_shop_sale_gender'] == '1'){
-                                //     $result[$index]['ls_shop_sale_gender'] = "ชาย";
-                                // }else if($result[$index]['ls_shop_sale_gender'] == '2'){
-                                //     $result[$index]['ls_shop_sale_gender'] = "หญิง";
-                                // }else  if($result[$index]['ls_shop_sale_gender'] == '3'){
-                                //     $result[$index]['ls_shop_sale_gender'] = "ไม่ระบุ";
-                                // }
-                               
-                            }
-                           
-                        
-                    }
-                    
-                    return $result;
-    
-            }
-            
-            
-
-    }
-
-
-
-    public function ConvertJson_DATASTUDIO($result){
-    
-            
-            for($index =0; $index  < sizeof($result); $index ++){
-
-                    $array_latlon           = json_decode($result[$index]['ls_shop_lat_lon'],true);
-                    $array_tambol           = json_decode($result[$index]['ls_shop_address'],true);
-                    $array_file             = json_decode($result[$index]['ls_shop_file'],true);
-                    $array_line_regis       = json_decode($result[$index]['ls_shop_line_regis'],true);
-
-
-                    $result[$index]['ls_shop_lat_lon']      =  $array_latlon['lat'] .",".$array_latlon['lon'];
-                    // $result[$index]['ls_shop_lat_lon']      =  $array_latlon['lon'];
-
-
-                    $result[$index]['ls_shop_address_address']              =  $array_tambol['address'];
-                    $result[$index]['ls_shop_address_tambon']               =  $array_tambol['tambon'];
-                    $result[$index]['ls_shop_address_amphoe']               =  $array_tambol['amphoe'];
-                    $result[$index]['ls_shop_address_province']             =  $array_tambol['province'];
-                    $result[$index]['ls_shop_address_zipcode']              =  $array_tambol['zipcode'];
-                    $result[$index]['ls_shop_address_tambon_code']          =  $array_tambol['tambon_code'];
-                    $result[$index]['ls_shop_address_amphoe_code']          =  $array_tambol['amphoe_code'];
-                    $result[$index]['ls_shop_address_province_code']        =  $array_tambol['province_code'];
-                    $result[$index]['ls_shop_address_id']                   =  $array_tambol['id'];
-
-                    if(isset($array_tambol['address_number'])){
-                        if(isset($array_tambol['address_group_number'])){
-
-                            $result[$index]['ls_shop_address_number']               =  $array_tambol['address_number'];
-                            $result[$index]['ls_shop_address_group_number']         =  $array_tambol['address_group_number'];
-
-                        }
-                    }else{
-                        $result[$index]['ls_shop_address_number']               =  NULL;
-                        $result[$index]['ls_shop_address_group_number']         =  NULL;
-                    }
-
-
-
-
-                    $result[$index]['ls_shop_file_ls_shop_file_01']         =  $array_file['ls_shop_file_01'];
-
-                    $result[$index]['ls_shop_line_regis_user_line_uid']             =  $array_line_regis['user_line_uid'];
-                    $result[$index]['ls_shop_line_regis_user_line_name']            =  $array_line_regis['user_line_name'];
-                    $result[$index]['ls_shop_line_regis_user_line_pic_url']         =  $array_line_regis['user_line_pic_url'];
-
-                    if(isset($array_line_regis['user_os'])){
-                            $result[$index]['ls_shop_line_regis_user_line_os']              =  $array_line_regis['user_os'];
-                    }else{
-                            $result[$index]['ls_shop_line_regis_user_line_os']   = NULL;
-                    }
-
-                    if($result[$index]['ls_shop_sale_gender'] == null){
-                        $result[$index]['ls_shop_sale_status_detail']   = "false";
-                    }else{
-                        $result[$index]['ls_shop_sale_status_detail']   = "true";
-                        
-                        // if($result[$index]['ls_shop_sale_gender'] == '1'){
-                        //     $result[$index]['ls_shop_sale_gender'] = "ชาย";
-                        // }else if($result[$index]['ls_shop_sale_gender'] == '2'){
-                        //     $result[$index]['ls_shop_sale_gender'] = "หญิง";
-                        // }else  if($result[$index]['ls_shop_sale_gender'] == '3'){
-                        //     $result[$index]['ls_shop_sale_gender'] = "ไม่ระบุ";
-                        // }
-                       
-                    }
-                    
-        
-                    unset($result[$index]['ls_shop_address']    );
-                    unset($result[$index]['ls_shop_file']       );
-                    unset($result[$index]['ls_shop_line_regis'] );
-                    
-                
-            }
-            
-            return $result;
-
-
-    }
 
 
     public function InsertShopLog($data_){
@@ -330,6 +329,44 @@ class Model_Line_Sale extends CI_Model{
         }
     }
 
- 
+    public function EditShopByShopSalf($data_){
+        
+        if($data_['ls_shop_id']  != ""){
+            
+            $this->db->trans_begin();
+            $this->db->where('ls_shop_id', $data_['ls_shop_id'])
+            ->set(
+                array( 
+                    
+                    "ls_shop_sale_type"         => $data_['ls_shop_sale_type'],
+                    'ls_shop_name'              => $data_['ls_shop_name'],
+                    'ls_shop_name_owner'        => $data_['ls_shop_name_owner'],
+                    'ls_shop_address'           => json_encode($data_['ls_shop_address']),
+                    'ls_shop_tel_mobile'        => $data_['ls_shop_tel_mobile'],
+                    'ls_shop_line_regis'        => json_encode($data_['ls_line_data']),
+                  
+        
+                    )) ->update('ls_shop');
+    
+    
+            if ($this->db->trans_status() === false) {
+                $this->db->trans_rollback();
+                return  array(  'status' => "false" , 'result' => "EditShopByShopSalf false" );
+            } else {
+                $this->db->trans_commit();
+                $data_['action'] = "EditShopByShopSalf";
+                $data_['ls_shop_sale_id'] =  $data_['ls_shop_id'];
+    
+                $this->InsertShopLog($data_);
+    
+                return  array(  'status' => "true" , 'result' => "EditShopByShopSalf ls_shop true" );
+            }
+        }else{
+            return  array(  'status' => "false" , 'result' => "EditShopByShopSalf false" );
+        }
+
+  
+
+    }
 
 }

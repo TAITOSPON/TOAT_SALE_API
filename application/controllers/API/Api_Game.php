@@ -9,6 +9,7 @@ class Api_Game extends REST_Controller{
 
                 parent::__construct();
                 $this->load->model('Model_Game');
+                $this->load->model('Model_Line_Sale');
             
         }
 
@@ -28,11 +29,23 @@ class Api_Game extends REST_Controller{
                 
         }
 
-        public function treetest_get(){
-      
-                $result = $this->Model_Game->tree(); 
-                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        public function GetAllShopAward_post(){
                 
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->GetAllShopAward($data); 
+
+                for($index =0; $index  < sizeof($result); $index ++){
+                        $result[$index]['ls_shop_detail'] = $this->Model_Line_Sale->ConvertJson_DATASTUDIO($result[$index]['ls_shop_detail']);
+                }
+
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+        public function GetAllShopAwardGroup_post(){
+                
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->GetAllShopAwardGroup($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
    
 
