@@ -47,6 +47,34 @@ class Api_Game extends REST_Controller{
                 $result = $this->Model_Game->GetAllShopAwardGroup($data); 
                 echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
+
+
+
+
+        // GameChoice
+        public function InsertStartGameChoice_post(){
+     
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->InsertStartGameChoice($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+        public function UpdatePointGameChoice_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->UpdatePointGameChoice($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);    
+        }
    
+        public function CheckStatusPlayGameChoice_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->CheckStatusPlayGameChoice($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);    
+        }
+
+        public function GetAllShopPlayGameChoice_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->GetAllShopPlayGameChoice($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
 
 }

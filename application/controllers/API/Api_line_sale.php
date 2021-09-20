@@ -9,7 +9,7 @@ class Api_line_sale extends REST_Controller{
 
                 parent::__construct();
                 $this->load->model('Model_Line_Sale');
-            
+                $this->load->model('Model_Game');
         }
 
         public function InsertShop_post(){
@@ -30,20 +30,63 @@ class Api_line_sale extends REST_Controller{
 
                                 $data = json_decode(file_get_contents('php://input'), true);  
                                 $result = $this->Model_Line_Sale->GetAllShopRegister($data); 
-                                $result = json_encode( $this->Model_Line_Sale->ConvertJson_DATASTUDIO($result) ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                                echo  $result ; 
+                                $result = $this->Model_Line_Sale->ConvertJson_DATASTUDIO($result); 
+                                $result = $this->CheckStatusShopPlayGameCount($result,"DATASTUDIO");
+                                echo json_encode( $result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ; 
                         }
 
                 }else{
                         $data = json_decode(file_get_contents('php://input'), true);  
                         $result = $this->Model_Line_Sale->GetAllShopRegister($data); 
-                        $result = json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                        // $result = json_encode( $this->ConvertJson($result) ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                        echo  $result ;
+                        $result = $this->CheckStatusShopPlayGameCount($result,"");
+                        echo json_encode( $result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
                 }
           
              
+        }
+
+        
+        public function CheckStatusShopPlayGameCount($result,$type){
+                if($type == "DATASTUDIO"){
+
+                        for($index =0; $index  < sizeof($result); $index ++){
+
+                                $result_status = $this->Model_Game->CheckStatusPlayGameRegisCount(
+                                       
+                                        array(
+                                                "ls_shop_id" => $result[$index]['ls_shop_id'],
+                                                "user_line_uid" => $result[$index]['ls_shop_line_regis_user_line_uid'],
+        
+                                        )
+                                );
+        
+                                $result[$index]["ls_shop_sale_status_play_game_count_regis"] = $result_status;
+                        }
+        
+                    
+                }else{
+                        for($index =0; $index  < sizeof($result); $index ++){
+
+                                $result_convert = $this->Model_Line_Sale->ConvertJson_DATASTUDIO(array($result[$index])); 
+        
+                          
+                                $result_status = $this->Model_Game->CheckStatusPlayGameRegisCount(
+                                       
+                                        array(
+                                                "ls_shop_id" => $result[$index]['ls_shop_id'],
+                                                "user_line_uid" => $result_convert[0]['ls_shop_line_regis_user_line_uid'],
+        
+                                        )
+                                );
+        
+                                $result[$index]["ls_shop_sale_status_play_game_count_regis"] = $result_status;
+                        }
+                        
+                }
+
+                return $result;
+
         }
 
 
@@ -115,10 +158,9 @@ class Api_line_sale extends REST_Controller{
 
         public function DeleteShopDataById_post(){
 
-
                 $data = json_decode(file_get_contents('php://input'), true);  
-                $result = json_encode( $this->Model_Line_Sale->DeleteShop($data)  ,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-                echo  $result ;
+                $result = $this->Model_Line_Sale->DeleteShop($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         } 
 
 
@@ -151,6 +193,15 @@ class Api_line_sale extends REST_Controller{
                 echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
 
+        public function GetShopOnlyBase1_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Line_Sale->GetShopOnlyBase1($data); 
+                $result = $this->Model_Line_Sale->ConvertJson_DATASTUDIO($result); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+     
+        
+ 
        
 
 }

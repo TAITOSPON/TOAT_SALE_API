@@ -336,4 +336,237 @@ class Model_Game extends CI_Model{
 
 
 
+
+    // Game Choice
+    public function InsertStartGameChoice($data){
+        if(isset($data['ls_shop_id'])){
+            if(isset($data['user_line_uid'])){
+
+                $ls_shop_id = $data['ls_shop_id'];
+                $user_line_uid = $data['user_line_uid'];
+
+                $result_count = $this->ls_game->query("SELECT count(*) FROM `ls_game_choice` 
+                                                        WHERE `ls_shop_id` = '$ls_shop_id'
+                                                        AND  `user_line_uid` = '$user_line_uid'")->result_array();
+               
+
+                $count = $result_count[0]['count(*)'];
+
+
+                $ls_game_choice_detail = array(
+                    "status_play"   => "not_end",
+                    "point_index_1" => "0",
+                    "point_index_2" => "0",
+                    "point_index_3" => "0",
+                    "point_index_4" => "0",
+                    "point_index_5" => "0",
+                    "sum_point"     => "0"
+
+                );
+
+                if($count == 0 ){
+                   
+                    $data_insert = array(
+                        'ls_game_choice_id'             => NULL,
+                        'ls_shop_id'                    => $ls_shop_id,
+                        "user_line_uid"                 => $user_line_uid,
+                        'ls_game_choice_datetime'       => date("Y-m-d H:i:s"),
+                        'ls_game_choice_detail'         => json_encode($ls_game_choice_detail),
+             
+                    );
+         
+            
+                    $this->ls_game->insert('ls_game_choice', $data_insert);
+                    if(($this->ls_game->affected_rows() != 1) ? false : true){
+            
+            
+                        $result_retrun = $this->ls_game->query(" SELECT * FROM `ls_game_choice`
+                                                    WHERE `ls_shop_id` = '$ls_shop_id'
+                                                    AND  `user_line_uid` = '$user_line_uid' 
+                                                    ORDER BY `ls_game_choice_id`  DESC LIMIT 1 ")->result_array();
+                        $result_retrun[0]['ls_game_choice_detail'] = json_decode($result_retrun[0]['ls_game_choice_detail'] , true);    
+
+                        return  array(  'status' => "true" , 'result' => "InsertStartGameChoice true" , 'data' => $result_retrun);
+            
+                    }else{
+            
+                        return  array(  'status' => "false" , 'result' => "InsertStartGameChoice false" );
+            
+                    }
+        
+                }else if ($count == 1){
+
+                    $data_insert = array(
+                    
+                        'ls_shop_id'                    => $ls_shop_id,
+                        "user_line_uid"                 => $user_line_uid,
+                        'ls_game_choice_datetime'       => date("Y-m-d H:i:s"),
+                        'ls_game_choice_detail'         => json_encode($ls_game_choice_detail),
+             
+                    );
+
+                    $this->ls_game->trans_begin();
+                    $this->ls_game->where('ls_shop_id', $ls_shop_id)->set($data_insert)->update('ls_game_choice');
+                        
+                    if ($this->ls_game->trans_status() === false) {
+                        $this->ls_game->trans_rollback();
+
+                        
+                        return  array(  'status' => "false" , 'result' => "InsertStartGameChoice false" );
+
+                    } else {
+                        $this->ls_game->trans_commit();
+
+                        $result_retrun = $this->ls_game->query(" SELECT * FROM `ls_game_choice`
+                                                                WHERE `ls_shop_id` = '$ls_shop_id'
+                                                                AND  `user_line_uid` = '$user_line_uid' 
+                                                                ORDER BY `ls_game_choice_id`  DESC LIMIT 1 ")->result_array();
+         
+                        $result_retrun[0]['ls_game_choice_detail'] = json_decode($result_retrun[0]['ls_game_choice_detail'] , true);            
+
+                        return  array(  'status' => "true" , 'result' => "InsertStartGameChoice true" , 'data' => $result_retrun);
+                    }
+
+                }
+
+            
+        
+
+            }else{
+                return  array(  'status' => "false" , 'result' => "request user_line_uid" );
+            }
+        }else{
+            return  array(  'status' => "false" , 'result' => "request ls_shop_id" );
+        }
+    }
+
+    public function UpdatePointGameChoice($data){
+
+    
+        $ls_shop_id = $data['ls_shop_id'];
+        $user_line_uid = $data['user_line_uid'];
+
+        $ls_game_choice_id = $data['ls_game_choice_detail'][0]['ls_game_choice_id'];
+       
+        $data_update = array(
+                    
+            'ls_shop_id'                    => $ls_shop_id,
+            "user_line_uid"                 => $user_line_uid,
+            'ls_game_choice_datetime'       => date("Y-m-d H:i:s"),
+            'ls_game_choice_detail'         => json_encode($data['ls_game_choice_detail'][0]['ls_game_choice_detail']),
+ 
+        );
+
+  
+        // return $data_update;
+
+        $this->ls_game->trans_begin();
+        $this->ls_game->where('ls_game_choice_id', $ls_game_choice_id)->set($data_update)->update('ls_game_choice');
+        // echo $this->ls_game->last_query(); 
+
+        if ($this->ls_game->trans_status() === false) {
+            $this->ls_game->trans_rollback();
+
+            
+            return  array(  'status' => "false" , 'result' => "UpdatePointGameChoice false" );
+
+        } else {
+            $this->ls_game->trans_commit();
+
+            $result_retrun = $this->ls_game->query(" SELECT * FROM `ls_game_choice`
+                                                    WHERE `ls_shop_id` = '$ls_shop_id'
+                                                    AND  `user_line_uid` = '$user_line_uid' 
+                                                    ORDER BY `ls_game_choice_id`  DESC LIMIT 1 ")->result_array();
+
+            $result_retrun[0]['ls_game_choice_detail'] = json_decode($result_retrun[0]['ls_game_choice_detail'] , true);            
+
+            return  array(  'status' => "true" , 'result' => "UpdatePointGameChoice true" , 'data' => $result_retrun);
+        }
+
+    }
+
+    public function CheckStatusPlayGameChoice($data){
+        $ls_shop_id = $data['ls_shop_id'];
+        $user_line_uid = $data['user_line_uid'];
+        
+        $result_retrun = $this->ls_game->query(" SELECT * FROM `ls_game_choice`
+            WHERE `ls_shop_id` = '$ls_shop_id'
+            AND  `user_line_uid` = '$user_line_uid' 
+            ORDER BY `ls_game_choice_id`  DESC LIMIT 1 ")->result_array();
+  
+
+        if(sizeof($result_retrun) != 0 ){
+            $result_retrun[0]['ls_game_choice_detail'] = json_decode($result_retrun[0]['ls_game_choice_detail'] , true); 
+            $status_play =  $result_retrun[0]['ls_game_choice_detail']['status_play'];
+        }else{
+            $status_play = "not_end";
+        }
+
+
+
+        return  array(  'status' => "true" , 'result' => "CheckStatusPlayGameChoice true"  , 'status_play' => $status_play , 'data' => $result_retrun);
+    }
+
+    public function GetAllShopPlayGameChoice($data){
+        $result_shop_game_choice = $this->ls_game->query("SELECT * FROM `ls_game_choice`  ORDER BY `ls_game_choice`.`ls_game_choice_id`  DESC")->result_array();
+       
+        $array_today = array();
+        $array_p2 = array();
+        $array_p3 = array();
+        $array_five_point = array();
+        $array_not_end = array();
+     
+
+        for($index =0; $index  < sizeof($result_shop_game_choice); $index ++){
+           
+            $result_shop_game_choice[$index]['ls_game_choice_detail'] = json_decode($result_shop_game_choice[$index]['ls_game_choice_detail'] , true); 
+            
+            $ls_shop_id = $result_shop_game_choice[$index]['ls_shop_id'];
+            
+            $result = $this->db->query(" SELECT * FROM `ls_shop` WHERE ls_shop_id = '$ls_shop_id' ")->result_array();
+            
+        
+            $result_shop_game_choice[$index]["ls_shop_detail"] = $this->ConvertJson_DATASTUDIO($result);
+
+
+            $ls_game_choice_datetime = strtotime( $result_shop_game_choice[$index]['ls_game_choice_datetime']);
+      
+            if(date("Y-m-d", $ls_game_choice_datetime) == date("Y-m-d") ){
+                array_push($array_today, $result_shop_game_choice[$index]);
+            }
+
+            if($result_shop_game_choice[$index]["ls_shop_detail"][0]["ls_shop_sale_type"] == "ป.2"){
+               
+                array_push($array_p2, $result_shop_game_choice[$index]);
+
+            }else if($result_shop_game_choice[$index]["ls_shop_detail"][0]["ls_shop_sale_type"] == "ป.3"){
+
+                array_push($array_p3, $result_shop_game_choice[$index]);
+
+            }
+
+            if( $result_shop_game_choice[$index]['ls_game_choice_detail']['status_play'] == "not_end" ){
+                array_push($array_not_end, $result_shop_game_choice[$index]);
+            }
+          
+            if( $result_shop_game_choice[$index]['ls_game_choice_detail']['sum_point'] == "5" ){
+                array_push($array_five_point, $result_shop_game_choice[$index]);
+            }
+        } 
+
+
+        return  array(  
+                "status"            => "true",
+                "sum_today"         => strval(sizeof($array_today)),
+                "sum_all_shop"      => strval(sizeof($result_shop_game_choice)),
+                "sum_p2"            => strval(sizeof($array_p2)),
+                "sum_p3"            => strval(sizeof($array_p3)),
+                "sum_not_end"       => strval(sizeof($array_not_end)),
+                "sum_five_point"    => strval(sizeof($array_five_point)),
+                "result"            => $result_shop_game_choice
+            );
+        
+        // return $result_shop_game_choice;
+    }
+
 }
