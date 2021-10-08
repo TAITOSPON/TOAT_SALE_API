@@ -569,4 +569,255 @@ class Model_Game extends CI_Model{
         // return $result_shop_game_choice;
     }
 
+
+
+    // Shop Q
+    public function GetDateQueue(){
+        $result_date_queue = $this->ls_game->query("SELECT * FROM `ls_queue_shop_date` WHERE ls_queue_shop_date_status = 1 ")->result_array();
+        return $result_date_queue;
+    }
+
+    public function GetTimeQueue($data){
+
+        $ls_queue_shop_date_id	 = $data['ls_queue_shop_date_id'];
+
+        $result_date_queue = $this->ls_game->query("SELECT * FROM `ls_queue_shop_date` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id' ")->result_array();
+        $ls_queue_shop_date_status_time =  $result_date_queue[0]['ls_queue_shop_date_status_time'];
+
+        if( $ls_queue_shop_date_status_time == "only_afternoon"){
+
+            $result_time_queue = $this->ls_game->query("SELECT * FROM `ls_queue_shop_time` WHERE ls_queue_shop_time_id = 3 or ls_queue_shop_time_id = 4 ")->result_array();
+
+        }else if( $ls_queue_shop_date_status_time == "only_moring"){
+            $result_time_queue = $this->ls_game->query("SELECT * FROM `ls_queue_shop_time` WHERE ls_queue_shop_time_id = 1 or ls_queue_shop_time_id = 2 ")->result_array();
+      
+        }else if( $ls_queue_shop_date_status_time == "not_all"){
+            $result_time_queue = array(array("ls_queue_shop_time_id" => "" , "ls_queue_shop_time_time" => "เต็ม" ,"ls_queue_shop_status" => "1"));
+
+        }else{
+            $result_time_queue = $this->ls_game->query("SELECT * FROM `ls_queue_shop_time`")->result_array();  
+        }
+  
+        $result = array();
+        for($index_time =0; $index_time  < sizeof( $result_time_queue ); $index_time ++){
+
+            $ls_queue_shop_time_id = $result_time_queue[$index_time]['ls_queue_shop_time_id'];
+
+            $result_shop = $this->ls_game->query(" SELECT * FROM `ls_queue_shop` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id' AND  ls_queue_shop_time_id = '$ls_queue_shop_time_id'")->result_array();
+            
+        
+            if(sizeof($result_shop) < 25){
+                array_push($result,$result_time_queue[$index_time]);
+            }
+       
+        }
+        
+        if(sizeof($result) == 0){
+            $result = array(array("ls_queue_shop_time_id" => "" , "ls_queue_shop_time_time" => "เต็ม" ,"ls_queue_shop_status" => "1"));
+        }
+
+        return $result;
+    }
+ 
+    public function InsertShopQueue($data){
+       
+        if(isset($data['ls_shop_id'])){
+               
+            $ls_shop_id             = $data['ls_shop_id'];
+            $user_line_uid          = $data['user_line_uid'];
+            $ls_queue_shop_date_id  = $data['ls_queue_shop_date_id'];
+            $ls_queue_shop_time_id  = $data['ls_queue_shop_time_id'];
+
+
+            $result_count = $this->ls_game->query("SELECT count(*) FROM `ls_queue_shop` WHERE ls_shop_id = '$ls_shop_id' AND user_line_uid = '$user_line_uid'")->result_array();
+            $count = $result_count[0]['count(*)'];
+          
+            if($count == 0 ){
+
+                $data_insert = array(
+                    'ls_queue_shop_id'              => NULL,
+                    'ls_queue_shop_datetime_create' => date("Y-m-d H:i:s"),
+                    'ls_shop_id'                    => $ls_shop_id,
+                    'user_line_uid'                 => $user_line_uid,
+                    'ls_queue_shop_date_id'         => $ls_queue_shop_date_id,
+                    'ls_queue_shop_time_id'         => $ls_queue_shop_time_id,
+                    
+                );
+        
+                $this->ls_game->insert('ls_queue_shop', $data_insert);
+                if(($this->ls_game->affected_rows() != 1) ? false : true){
+        
+                    $result_retrun = $this->ls_game->query(" SELECT * FROM `ls_queue_shop`
+                    WHERE `ls_shop_id` = '$ls_shop_id'
+                    AND  `user_line_uid` = '$user_line_uid' 
+                    ORDER BY `ls_queue_shop_id`  DESC LIMIT 1 ")->result_array();
+                   
+                    $result_shop = $this->db->query(" SELECT * FROM `ls_shop` WHERE ls_shop_id = '$ls_shop_id' ")->result_array();
+                    $result_retrun[0]['ls_shop_detail'] = $this->ConvertJson_DATASTUDIO($result_shop);       
+                    
+                    $result_shop_queue = $this->ls_game->query(" SELECT * FROM `ls_queue_shop` WHERE ls_shop_id = '$ls_shop_id' AND user_line_uid = '$user_line_uid'")->result_array();
+                    $result_shop_queue[0]['ls_queue_shop_date_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_date` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id'")->result_array();
+                    $result_shop_queue[0]['ls_queue_shop_time_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_time` WHERE ls_queue_shop_time_id = '$ls_queue_shop_time_id'")->result_array();
+                    $result_retrun[0]['ls_queue_shop'] = $result_shop_queue; 
+
+                    return  array(  'status' => "true" , 'result' => "InsertShopQueue true" , 'data' => $result_retrun);
+              
+        
+                }else{
+        
+                    return  array(  'status' => "false" , 'result' => "InsertShopQueue false" );
+        
+                }
+        
+
+
+            }else{
+                $data_insert = array(
+        
+                    'ls_queue_shop_datetime_create' => date("Y-m-d H:i:s"),
+                    'ls_shop_id'                    => $ls_shop_id,
+                    'user_line_uid'                 => $user_line_uid,
+                    'ls_queue_shop_date_id'         => $ls_queue_shop_date_id,
+                    'ls_queue_shop_time_id'         => $ls_queue_shop_time_id,
+                    
+                );
+
+                $this->ls_game->trans_begin();
+                $this->ls_game->where('ls_shop_id', $ls_shop_id)->set($data_insert)->update('ls_queue_shop');
+                    
+                if ($this->ls_game->trans_status() === false) {
+                    $this->ls_game->trans_rollback();
+
+                    
+                    return  array(  'status' => "false" , 'result' => "InsertShopQueue false" );
+
+                } else {
+                    $this->ls_game->trans_commit();
+
+                    $result_retrun = $this->ls_game->query(" SELECT * FROM `ls_queue_shop`
+                    WHERE `ls_shop_id` = '$ls_shop_id'
+                    AND  `user_line_uid` = '$user_line_uid' 
+                    ORDER BY `ls_queue_shop_id`  DESC LIMIT 1 ")->result_array();
+
+                    $result_shop = $this->db->query(" SELECT * FROM `ls_shop` WHERE ls_shop_id = '$ls_shop_id' ")->result_array();
+                    
+                    $result_retrun[0]['ls_shop_detail'] = $this->ConvertJson_DATASTUDIO($result_shop);
+
+                    $result_shop_queue = $this->ls_game->query(" SELECT * FROM `ls_queue_shop` WHERE ls_shop_id = '$ls_shop_id' AND user_line_uid = '$user_line_uid'")->result_array();
+                    $result_shop_queue[0]['ls_queue_shop_date_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_date` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id'")->result_array();
+                    $result_shop_queue[0]['ls_queue_shop_time_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_time` WHERE ls_queue_shop_time_id = '$ls_queue_shop_time_id'")->result_array();
+                    $result_retrun[0]['ls_queue_shop'] = $result_shop_queue; 
+
+                    return  array(  'status' => "true" , 'result' => "InsertShopQueue true" , 'data' => $result_retrun);
+                }
+
+            }
+
+        
+        }else{
+            return  array(  'status' => "false" , 'result' => "request ls_shop_id" );
+        }
+    }
+
+    public function ShopQueueCheck($data){
+
+        if(isset($data['ls_shop_id'])){
+            if(isset($data['user_line_uid'])){
+
+                $ls_shop_id             = $data['ls_shop_id'];
+                $user_line_uid          = $data['user_line_uid'];
+                $result_shop_queue = $this->ls_game->query(" SELECT * FROM `ls_queue_shop` WHERE ls_shop_id = '$ls_shop_id' AND user_line_uid = '$user_line_uid'")->result_array();
+              
+                if(sizeof( $result_shop_queue) != 0){
+                    $ls_queue_shop_date_id =  $result_shop_queue[0]['ls_queue_shop_date_id'];
+                    $ls_queue_shop_time_id =  $result_shop_queue[0]['ls_queue_shop_time_id']; 
+                    
+                    $result_shop_queue[0]['ls_queue_shop_date_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_date` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id'")->result_array();
+                    $result_shop_queue[0]['ls_queue_shop_time_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_time` WHERE ls_queue_shop_time_id = '$ls_queue_shop_time_id'")->result_array();
+                  
+                    return  array(  'status' => "true" , 'result' => "ShopQueueCheck true" , 'data' => $result_shop_queue);
+                }else{
+                    return  array(  'status' => "true" , 'result' => "no_data_queue" );
+                }
+
+            }else{
+                return  array(  'status' => "false" , 'result' => "request user_line_uid" );
+            }
+        }else{
+            return  array(  'status' => "false" , 'result' => "request ls_shop_id" );
+        }
+    }
+
+    public function GetAllShopQueue($data){
+     
+        $result_date = $this->GetDateQueue();
+
+        $result_time = $this->ls_game->query("SELECT * FROM `ls_queue_shop_time` ")->result_array();
+
+      
+        for($index =0; $index  < sizeof($result_date); $index ++){
+
+            $ls_queue_shop_date_time_shop_count = 0;
+
+            for($index_time =0; $index_time  < sizeof( $result_time ); $index_time ++){
+
+                $ls_queue_shop_date_id = $result_date[$index]['ls_queue_shop_date_id'];
+                $ls_queue_shop_time_id = $result_time[$index_time]['ls_queue_shop_time_id'];
+
+                $result_shop = $this->ls_game->query(" SELECT * FROM `ls_queue_shop` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id' AND  ls_queue_shop_time_id = '$ls_queue_shop_time_id'")->result_array();
+               
+                for($index_result_shop =0; $index_result_shop  < sizeof( $result_shop ); $index_result_shop ++){
+                    $ls_shop_id =  $result_shop[$index_result_shop]['ls_shop_id'];
+                    $result_shop_detail = $this->db->query(" SELECT * FROM `ls_shop` WHERE ls_shop_id = '$ls_shop_id' ")->result_array();
+                    $result_shop[$index_result_shop]['ls_shop_detail'] = $this->ConvertJson_DATASTUDIO($result_shop_detail);  
+
+                }
+
+                $result_time[$index_time]['ls_queue_shop_count'] = strval(sizeof($result_shop));
+                $result_time[$index_time]['ls_queue_shop'] = $result_shop;
+              
+                $ls_queue_shop_date_time_shop_count = intval($ls_queue_shop_date_time_shop_count) +  intval( $result_time[$index_time]['ls_queue_shop_count']);
+              
+            }
+
+       
+            $result_date[$index]['ls_queue_shop_date_time_shop_count'] = strval($ls_queue_shop_date_time_shop_count);
+            $result_date[$index]['ls_queue_shop_date_time'] =  $result_time;
+
+
+        }
+
+        
+      
+     
+        $data = array($result_date);
+
+        return  array(  'status' => "true" , 'result' => "InsertShopQueue false" ,"data" => $data);
+
+    
+    }
+
+    public function GetAllShopQueueEasy($data){
+
+        $result_shop = $this->ls_game->query(" SELECT * FROM `ls_queue_shop`")->result_array();
+
+        for($index_result_shop =0; $index_result_shop  < sizeof( $result_shop ); $index_result_shop ++){
+            $ls_shop_id =  $result_shop[$index_result_shop]['ls_shop_id'];
+            $result_shop_detail = $this->db->query(" SELECT * FROM `ls_shop` WHERE ls_shop_id = '$ls_shop_id' ")->result_array();
+            $result_shop[$index_result_shop]['ls_shop_detail'] = $this->ConvertJson_DATASTUDIO($result_shop_detail);  
+
+            $ls_queue_shop_date_id =  $result_shop[$index_result_shop]['ls_queue_shop_date_id'];
+            $ls_queue_shop_time_id =  $result_shop[$index_result_shop]['ls_queue_shop_time_id'];
+
+            $result_shop[$index_result_shop]['ls_queue_shop_date_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_date` WHERE ls_queue_shop_date_id = '$ls_queue_shop_date_id'")->result_array();
+            $result_shop[$index_result_shop]['ls_queue_shop_time_id'] = $this->ls_game->query(" SELECT * FROM `ls_queue_shop_time` WHERE ls_queue_shop_time_id = '$ls_queue_shop_time_id'")->result_array();
+
+        }
+
+        return  array(  'status' => "true" , 'result' => "InsertShopQueue false" ,"data" => $result_shop);
+    }
+
+
+    
+
 }

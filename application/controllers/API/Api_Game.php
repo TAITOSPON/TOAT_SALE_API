@@ -77,4 +77,42 @@ class Api_Game extends REST_Controller{
                 echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
         }
 
+
+
+        // Shop Q 27-30 /09/2021
+        public function GetDateQueue_post(){
+           
+                $result = $this->Model_Game->GetDateQueue(); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
+        public function GetTimeQueue_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->GetTimeQueue($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
+
+        public function InsertShopQueue_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->InsertShopQueue($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
+
+        public function ShopQueueCheck_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->ShopQueueCheck($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
+
+        public function GetAllShopQueue_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->GetAllShopQueue($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
+        public function GetAllShopQueueEasy_post(){
+                $data = json_decode(file_get_contents('php://input'), true);  
+                $result = $this->Model_Game->GetAllShopQueueEasy($data); 
+                echo json_encode($result,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);  
+        }
+
+  
 }
